@@ -1,93 +1,116 @@
 # Auto-Face-API
 
-A desktop tool (tkinter) that auto-posts to a Facebook Page (Fanpage) on a
-custom schedule — randomly picking one of 5 pre-written posts, each with a
-random image/video attached from a folder you choose.
+Công cụ desktop (tkinter) tự động đăng bài lên Fanpage Facebook theo lịch
+tùy chỉnh — chọn ngẫu nhiên 1 trong các bài viết đã chuẩn bị, kèm ngẫu
+nhiên 1 ảnh/video từ thư mục bạn chọn.
 
-Uses the **official Facebook Graph API** (no fake browser login), so it
-doesn't violate Facebook's terms and carries no risk of account suspension
-from fake-automation behavior.
+Dùng **Facebook Graph API chính thức** (không đăng nhập giả lập), nên
+không vi phạm điều khoản Facebook và không có rủi ro khóa tài khoản vì
+hành vi tự động hóa giả mạo.
 
-> Requires a Page ID + Page Access Token before use — use
-> [Auto-Get-Face-Access-Token](../Auto-Get-Face-Access-Token) to get one
-> automatically, or fetch one manually via the Graph API Explorer.
+> Cần có Page ID + Page Access Token trước khi dùng — dùng
+> [Auto-Get-Face-Access-Token](../token-pkg) để lấy tự động (khuyến
+> khích, vì 2 công cụ dùng chung 1 file cấu hình), hoặc lấy thủ công qua
+> Graph API Explorer.
 
-## Features
+## Giao diện mới
 
-- Posts to your Fanpage on a custom interval (minutes).
-- Pre-write up to **5 post contents**; each run randomly picks one (and
-  avoids repeating the post used last time, if more than one is available).
-- Automatically attaches 1 **random** image or video from a chosen folder
-  (default `~/Downloads/VidFaceAutoFix`) — can be disabled for text-only
-  posts.
-- Supported image formats: `.jpg .jpeg .png .gif .bmp .webp`; video:
-  `.mp4 .mov .avi .mkv .webm .m4v`.
-- "Post now" button to test your setup before starting the automatic loop.
-- Activity log shown right in the app (success/failure per post).
+Giao diện được làm lại hoàn toàn theo **tông màu xám - trắng**, chia
+thành từng khối (card) rõ ràng: Kết nối Fanpage → Lịch đăng bài → Nội
+dung bài viết → Điều khiển → Nhật ký. Cửa sổ có thanh cuộn nên vẫn dùng
+tốt trên màn hình nhỏ.
 
-## Requirements
+## Tính năng mới so với bản gốc
 
-- Python 3.9+ (tkinter usually ships with Python; on Ubuntu/Debian if
-  missing: `sudo apt install python3-tk`)
-- Dependency:
+- **Chọn Page trong danh sách xổ xuống**: nếu đã dùng
+  `AutoTokenAPI.py` để lưu (một hoặc nhiều) Page, chỉ cần chọn Page
+  muốn đăng — Page ID/Access Token tự điền, không cần nhập tay.
+- **"Kiểm tra kết nối"**: gọi thẳng Graph API để xác nhận Access Token
+  còn dùng được, hiển thị luôn tên Page đang trỏ tới.
+- **Đếm số ký tự** ngay dưới mỗi ô nhập bài viết.
+- **Xuất / nhập bài viết ra file `.txt`** để soạn/chỉnh sửa hàng loạt
+  bên ngoài rồi nạp lại (các bài cách nhau bởi dòng `---`).
+- **Đồng hồ đếm ngược** tới lần đăng kế tiếp khi đang chạy tự động.
+- **Lệch giờ đăng ngẫu nhiên (±phút)**: bật tùy chọn này để lịch đăng
+  không đúng y hệt mỗi X phút một cách máy móc, trông tự nhiên hơn.
+- **Tự thử lại tối đa 2 lần** nếu đăng bài gặp lỗi mạng/API tạm thời,
+  có nghỉ giữa các lần thử.
+- **Tránh lặp lại đúng ảnh/video** vừa dùng ở lần đăng ngay trước (giống
+  cách bản gốc đã tránh lặp bài viết).
+- **Lịch sử đăng bài**: mỗi lần đăng (thành công hay lỗi) được ghi vào
+  `post_history.log`, xem lại trực tiếp trong ứng dụng qua nút
+  **"Lịch sử đăng bài"**.
+- Nhật ký hoạt động có màu: xanh = thành công, đỏ = lỗi, cam = cảnh báo.
+
+## Yêu cầu
+
+- Python 3.9+ (tkinter thường có sẵn theo Python; trên Ubuntu/Debian nếu
+  thiếu: `sudo apt install python3-tk`)
+- Cài thư viện:
 
 ```bash
 pip install requests
 ```
 
-## Before you start
+## Trước khi chạy
 
-1. **Page ID** and **Page Access Token** for the Fanpage (see
-   [Auto-Get-Face-Access-Token](../Auto-Get-Face-Access-Token) to get these
-   automatically, written straight into the shared config file).
-2. Up to 5 sample post contents.
-3. (Optional) A folder of images/videos to attach randomly.
+1. **Page ID** và **Page Access Token** cho Fanpage (dùng
+   [Auto-Get-Face-Access-Token](../token-pkg) để lấy tự động, ghi thẳng
+   vào file cấu hình dùng chung).
+2. Một vài nội dung bài viết mẫu.
+3. (Tùy chọn) Một thư mục chứa ảnh/video để đính kèm ngẫu nhiên.
 
-## Running
+> **Lưu ý:** 2 công cụ dùng chung file `fb_autopost_config.json` — hãy
+> đặt `AutoTokenAPI.py` và `AutoFixFace.py` trong **cùng một thư mục**.
+
+## Chạy
 
 ```bash
 python3 AutoFixFace.py
 ```
 
-In the app: enter Page ID + Access Token (or leave blank if already saved
-by Auto-Get-Face-Access-Token), fill in your post contents, pick a media
-folder (if using one), click **Save config**, then **▶ Start** to begin the
-automatic posting loop.
+Trong ứng dụng: chọn Page đã lưu (hoặc nhập tay Page ID + Access Token),
+bấm **"Kiểm tra kết nối"** để chắc chắn Token còn hoạt động, điền nội
+dung bài viết, chọn thư mục ảnh/video (nếu dùng), bấm **"Lưu cấu hình"**,
+rồi **▶ Bắt đầu** để chạy vòng lặp đăng bài tự động. Có thể bấm
+**"Đăng thử ngay 1 bài"** để kiểm tra trước khi chạy tự động.
 
-## Configuration
+## Cấu hình
 
-Stored in `fb_autopost_config.json` in the script's directory: `page_id`,
-`access_token`, posting interval (minutes), the list of posts, and the
-media folder.
+Lưu trong `fb_autopost_config.json` (cùng thư mục với script, dùng
+chung với `AutoTokenAPI.py`): `page_id`, `access_token`, `pages` (danh
+sách Page đã lưu), khoảng thời gian đăng + độ lệch ngẫu nhiên (phút),
+danh sách bài viết, thư mục media, có dùng media hay không.
 
-## Security
+Lịch sử đăng bài lưu riêng trong `post_history.log` (mỗi dòng 1 bản ghi
+JSON: thời gian, kết quả, nội dung rút gọn).
 
-- **Access Token** is stored as plain text in `fb_autopost_config.json` —
-  **never commit this file to Git**. Add it to `.gitignore`:
+## Bảo mật
+
+- **Access Token** được lưu dạng văn bản thường trong
+  `fb_autopost_config.json` — **không commit file này lên Git**. Thêm
+  vào `.gitignore`:
   ```
   fb_autopost_config.json
+  post_history.log
   ```
-- If a token ever leaks, revoke it immediately at **Facebook → Settings →
-  Security → Apps and Websites**.
+- Nếu token bị lộ, thu hồi ngay tại **Facebook → Cài đặt → Bảo mật →
+  Ứng dụng và trang web**.
 
-## Want a long-lived Page Token (won't expire after 1-2 hours)?
+## Muốn Long-lived Page Token (không hết hạn sau 1-2 tiếng)?
 
-If you got your token manually (without using the
-Auto-Get-Face-Access-Token repo), exchange a short-lived token for a
-long-lived one:
+Nếu lấy token thủ công (không qua Auto-Get-Face-Access-Token), đổi
+short-lived token lấy long-lived:
 
 ```bash
 curl -i -X GET "https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=APP_ID&client_secret=APP_SECRET&fb_exchange_token=SHORT_TOKEN"
 ```
 
-Then use the long-lived **user** token to call `/me/accounts` and get a
-**Page** token — Page tokens obtained this way usually don't expire.
+Sau đó dùng long-lived **user** token gọi `/me/accounts` để lấy **Page**
+token — Page token lấy theo cách này thường không tự hết hạn.
 
-## Notes
+## Lưu ý khi dùng
 
-- The original README listed the run command as `python3 fb_autopost.py` —
-  the actual filename in this repo is **`AutoFixFace.py`**; this README
-  corrects that.
-- Posting too frequently, or with repetitive content, may get flagged as
-  spam by Facebook and hurt your Page's reach — use a reasonable interval
-  and vary your content.
+- Đăng quá dày hoặc nội dung lặp lại có thể bị Facebook đánh giá là
+  spam, ảnh hưởng lượt tiếp cận trang — nên đặt khoảng thời gian hợp lý,
+  bật lệch giờ ngẫu nhiên, và đa dạng nội dung.
